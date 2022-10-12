@@ -1,27 +1,11 @@
 package com.udacity.project4.locationreminders
 
-import android.Manifest
-import android.annotation.TargetApi
-import android.content.Intent
-import android.content.IntentSender
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
-import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.NavHostFragment
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.material.snackbar.Snackbar
-import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityRemindersBinding
 import kotlinx.android.synthetic.main.activity_reminders.*
@@ -32,13 +16,14 @@ import kotlin.concurrent.timerTask
  * The RemindersActivity that holds the reminders fragments
  */
 class RemindersActivity : AppCompatActivity() {
-    private val runningQOrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    //private val runningQOrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q  //no longer needed
     private lateinit var binding: ActivityRemindersBinding
 
+    /* no longer needed
     override fun onStart() {
         super.onStart()
         checkPermissionsAndStartGeofencing()
-    }
+    }*/
 
 
 
@@ -67,7 +52,9 @@ class RemindersActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+//region Move this code to SaveReminderFragment
 
+/*
     @TargetApi(29)
      fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
         val foregroundLocationApproved = (
@@ -108,7 +95,7 @@ class RemindersActivity : AppCompatActivity() {
         )
     }
 
-    private fun checkPermissionsAndStartGeofencing() {
+    fun checkPermissionsAndStartGeofencing() {
 
         if (foregroundAndBackgroundLocationPermissionApproved()) {
             checkDeviceLocationSettingsAndStartGeofence()
@@ -153,6 +140,7 @@ class RemindersActivity : AppCompatActivity() {
         locationSettingsResponseTask.addOnCompleteListener {
             if ( it.isSuccessful ) {
               //  addGeofenceForClue()
+                Log.e(TAG,"DDDD")
             }
         }
     }
@@ -184,13 +172,16 @@ class RemindersActivity : AppCompatActivity() {
             checkDeviceLocationSettingsAndStartGeofence()
         }
     }
-
+*/
+    //endregion
 
 }
+private const val TAG = "RemindersActivity"
 
+/* no longer needed
 private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
-private const val TAG = "RemindersActivity"
 private const val LOCATION_PERMISSION_INDEX = 0
 private const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1
+*/

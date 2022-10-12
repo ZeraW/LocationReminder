@@ -71,4 +71,20 @@ class RemindersListViewModelTest {
     }
 
 
+    @Test
+    fun getReminder_withError() = mainCoroutineRule.runBlockingTest  {
+        //Given
+        val reminder = ReminderDTO("Title", "Description", "Location", 37.0, 25.7, "id")
+        dataSource.saveReminder(reminder)
+        dataSource.setReturnError(true)
+
+        //when
+        remindersListViewModel.loadReminders()
+
+        //then
+        assertThat(remindersListViewModel.showSnackBar.getOrAwaitValue(), `is`(notNullValue()))
+    }
+
+
+
 }

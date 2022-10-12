@@ -61,6 +61,17 @@ class RemindersLocalRepositoryTest {
     }
 
 
+
+    @Test
+    fun getReminderWithFakeId_Fails() = runBlocking {
+        //When
+        val result = remindersLocalRepository.getReminder("F a k e I D") as Result.Error
+        //Then
+        assertThat(result.message, `is`("Reminder not found!"))
+    }
+
+
+
     @Test
     fun deleteReminder_Success() = runBlocking {
         //Given
