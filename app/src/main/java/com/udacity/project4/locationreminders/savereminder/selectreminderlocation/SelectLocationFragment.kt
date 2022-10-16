@@ -4,7 +4,6 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -12,7 +11,6 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -21,7 +19,10 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -37,6 +38,7 @@ import org.koin.android.ext.android.inject
 import java.util.*
 import kotlin.concurrent.timerTask
 
+
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     //Use Koin to get the view model of the SaveReminder
@@ -47,7 +49,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var homeLatLng: LatLng
     private lateinit var selectedPoi: PointOfInterest
-    private val runningQOrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    //private val runningQOrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     private lateinit var ctx: Context
 
     override fun onCreateView(
@@ -117,16 +119,23 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         setOnMapClick(mMap)
         setMapStyle(mMap)
-        //enableMyLocation()
         checkPermissionsAndGetUserLocation()
         //for test purpose only
         setOnMapLongClick(mMap)
+
+        mMap.setOnMyLocationButtonClickListener {
+            checkDeviceLocationSettingsAndGetUserLocation()
+
+            true
+        }
     }
 
     private fun moveCameraToLocation(location: Location?) {
         homeLatLng = if(location!=null){
+            Log.e(TAG,"location!=null")
             LatLng(location.latitude, location.longitude)
         }else{
+            Log.e(TAG,"location==null")
             LatLng(29.9825327, 31.1436696)
         }
 
@@ -147,7 +156,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
-        Log.e(TAG,"dada")
+        Log.e(TAG,"enableMyLocation()")
 
         mMap.isMyLocationEnabled = true
         fusedLocationClient.lastLocation
@@ -158,28 +167,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             }
     }
 
-
-   /* override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        when (requestCode) {
-            REQUEST_LOCATION_PERMISSION -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    Log.e(TAG, "Permission is granted.")
-                    enableMyLocation()
-                } else {
-                    Log.e(TAG, "Permission is not granted.")
-
-                }
-                return
-            }
-        }
-    }*/
 
     private fun setMapStyle(map: GoogleMap) {
         try {
@@ -255,7 +242,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private fun checkPermissionsAndGetUserLocation() {
         if (foregroundLocationPermissionApproved()) {
-            checkDeviceLocationSettingsAndGetUserLocation()
+            enableMyLocation()
         } else {
             requestForegroundLocationPermissions()
         }
@@ -340,7 +327,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         Log.d(TAG, "onRequestPermissionResult")
 
         if (requestCode == REQUEST_LOCATION_PERMISSION && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            checkDeviceLocationSettingsAndGetUserLocation()
+            enableMyLocation()
+          //  checkDeviceLocationSettingsAndGetUserLocation()
         }else{
             Snackbar.make(
                 binding.root,
@@ -348,11 +336,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 Snackbar.LENGTH_INDEFINITE
             )
                 .setAction(R.string.settings) {
-                    startActivity(Intent().apply {
-                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
+                    requestPermissions(
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION
+                    )
                 }.show()
         }
     }
@@ -361,10 +347,5 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
 }
 
-const val GEOFENCE_RADIUS_IN_METERS = 100f
 private const val TAG = "SelectLocationFragment"
-private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
-private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
-private const val LOCATION_PERMISSION_INDEX = 0
-private const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1
